@@ -84,6 +84,8 @@ def main():
                      help="number of radial distortion coefficients to use (up to 6, default %default)")
     group.add_option("--disable_calib_cb_fast_check", action='store_true', default=False,
                      help="uses the CALIB_CB_FAST_CHECK flag for findChessboardCorners")
+    group.add_option("--mono-before-stereo", action='store_true', default=False,
+                     help="Independently perform monocular calibration before stereo calibration")
     parser.add_option_group(group)
     options, args = parser.parse_args()
 
@@ -143,7 +145,7 @@ def main():
 
     rospy.init_node('cameracalibrator')
     node = OpenCVCalibrationNode(boards, options.service_check, sync, calib_flags, pattern, options.camera_name,
-                                 checkerboard_flags=checkerboard_flags)
+                                 checkerboard_flags=checkerboard_flags, mono_before_stereo=options.mono_before_stereo)
     rospy.spin()
 
 if __name__ == "__main__":
