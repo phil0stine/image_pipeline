@@ -1,3 +1,66 @@
+1.17.0 (2022-10-17)
+-------------------
+* Switch to hpp headers of pluginlib
+* Drop old C++ standard compiler flag
+* Switch to new boost/bind/bind.hpp
+* Add missing CATKIN_DEPENDS
+* Update frame id to match depth_front, rgb_front
+* Create point_cloud_xyzrgb.launch
+  Created launch file for point_cloud_xyzrgb
+* Delete depth_image_proc/script directory
+* Delete depth_image_proc/launch directory
+* Contributors: Anirban Dam, Jochen Sprickerhof
+
+1.16.0 (2021-11-12)
+-------------------
+* Fix includes
+  In the following commit in vision_opencv, the include
+  opencv2/calib3d/calib3d.hpp was removed from pinhole_camera_model.h :
+  https://github.com/ros-perception/vision_opencv/commit/51ca54354a8353fc728fcc8bd8ead7d2b6cf7444
+  Since we indirectly depended on this include, we now have to add it
+  directly.
+* support rgba8 and bgra8 encodings by skipping alpha channel
+* functional xyzrgb radial nodelet
+* add xyzrgb radial nodelet
+* Support MONO16 image encodings.
+* Add missing cstdint, vector, cmath includes.
+* Contributors: Avinash Thakur, Evan Flynn, Martin Günther, Mike Purvis
+
+1.15.3 (2020-12-11)
+-------------------
+* remove email blasts from steve macenski (`#595 <https://github.com/ros-perception/image_pipeline/issues/595>`_)
+* Contributors: Steve Macenski
+
+1.15.2 (2020-05-19)
+-------------------
+
+1.15.1 (2020-05-18)
+-------------------
+
+1.15.0 (2020-05-14)
+-------------------
+* Python 3 compatibility (`#530 <https://github.com/ros-perception/image_pipeline/issues/530>`_)
+* cmake_minimum_required to 3.0.2
+* Adapted to OpenCV4
+* import setup from setuptools instead of distutils-core
+* updated install locations for better portability. (`#500 <https://github.com/ros-perception/image_pipeline/issues/500>`_)
+* Contributors: Joshua Whitley, Sean Yen
+
+1.14.0 (2020-01-12)
+-------------------
+* Merge pull request `#478 <https://github.com/ros-perception/image_pipeline/issues/478>`_ from ros-perception/steve_main
+  added option to fill the sparse areas with neareast neighbor depth va…
+* Merge pull request `#336 <https://github.com/ros-perception/image_pipeline/issues/336>`_ from madsherlock/indigo
+  depth_image_proc/point_cloud_xyzi_radial Add intensity conversion (copy) for float
+* depth_image_proc: fix support for mono16 intensity encoding in point_cloud_xyzi node (`#352 <https://github.com/ros-perception/image_pipeline/issues/352>`_)
+* added option to fill the sparse areas with neareast neighbor depth values on upsampling operations in depth_image_proc/register
+* point_cloud_xyzi Add intensity conversion for float
+* Add intensity conversion (copy) for float
+  This commit enables the generation of xyzi point clouds from 32-bit floating point intensity images.
+  The destination data type for intensity storage is 32-bit float, so all that is required is a data copy.
+  The change in this commit is simply an extension of the if-else statement to include the TYPE_32FC1 type and apply the usual convert_intensity() method.
+* Contributors: Mikael Westermann, Richard Bormann, Steven Macenski, Stewart Jamieson, Tim Übelhör
+
 1.13.0 (2019-06-12)
 -------------------
 * Merge pull request `#395 <https://github.com/ros-perception/image_pipeline/issues/395>`_ from ros-perception/steve_maintain

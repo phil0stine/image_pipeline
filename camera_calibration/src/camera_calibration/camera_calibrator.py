@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Software License Agreement (BSD License)
 #
@@ -32,7 +32,6 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from __future__ import print_function
 import cv2
 import message_filters
 import numpy
@@ -47,7 +46,7 @@ try:
     from queue import Queue
 except ImportError:
     from Queue import Queue
-from calibrator import CAMERA_MODEL
+from camera_calibration.calibrator import CAMERA_MODEL
 
 class BufferQueue(Queue):
     """Slight modification of the standard Queue that discards the oldest item
@@ -83,7 +82,7 @@ class DisplayThread(threading.Thread):
         cv2.setMouseCallback("display", self.opencv_calibration_node.on_mouse)
         cv2.createTrackbar("Camera type: \n 0 : pinhole \n 1 : fisheye", "display", 0,1, self.opencv_calibration_node.on_model_change)
         cv2.createTrackbar("scale", "display", 0, 100, self.opencv_calibration_node.on_scale)
-        
+
         while True:
             if self.queue.qsize() > 0:
                 self.image = self.queue.get()
@@ -153,7 +152,7 @@ class CalibrationNode:
         self.q_stereo = BufferQueue(queue_size)
 
         self.c = None
-        
+
         self._last_display = None
         self.lcal = None
         self.rcal = None
@@ -177,16 +176,16 @@ class CalibrationNode:
 
     def queue_stereo(self, lmsg, rmsg):
         if self._mono_before_stereo:
-            if self.lcal == None:
+            if self.lcal is None:
                 self.q_mono.put(lmsg)
-            elif self.rcal == None:
+            elif self.rcal is None:
                 self.q_mono.put(rmsg)
             else:
                 self.q_stereo.put((lmsg, rmsg))
         else:
             self.q_stereo.put((lmsg, rmsg))
 
-    def init_monocular(self):
+   def init_monocular(self):
         if self._camera_name:
             c = MonoCalibrator(self._boards, self._calib_flags, self._fisheye_calib_flags, self._pattern, name=self._camera_name,
                                checkerboard_flags=self._checkerboard_flags,
@@ -212,7 +211,7 @@ class CalibrationNode:
 
     def handle_monocular(self, msg):
         if self.c == None:
-            self.c = self.init_monocular()
+            self.c = self.init_monocular()    
         # This should just call the MonoCalibrator
         drawable = self.c.handle_msg(msg)
         self.displaywidth = drawable.scrib.shape[1]
@@ -316,6 +315,10 @@ class OpenCVCalibrationNode(CalibrationNode):
                     if self.do_upload():
                         rospy.signal_shutdown('Quit')
     def on_model_change(self, model_select_val):
+        if self.c == None:
+            print("Cannot change camera model until the first image has been received")
+            return
+
         self.c.set_cammodel( CAMERA_MODEL.PINHOLE if model_select_val < 0.5 else CAMERA_MODEL.FISHEYE)
 
     def on_scale(self, scalevalue):
@@ -375,7 +378,7 @@ class OpenCVCalibrationNode(CalibrationNode):
         else:
             self.putText(display, "lin.", (width, self.y(0)))
             linerror = drawable.linear_error
-            if linerror < 0:
+            if linerror is None or linerror < 0:
                 msg = "?"
             else:
                 msg = "%.2f" % linerror

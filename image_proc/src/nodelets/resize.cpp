@@ -64,6 +64,7 @@ protected:
   typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
   std::shared_ptr<ReconfigureServer> reconfigure_server_;
   Config config_;
+  cv_bridge::CvImage scaled_cv_;
 
   virtual void onInit();
   void connectCb();
@@ -162,6 +163,11 @@ void ResizeNodelet::infoCb(const sensor_msgs::CameraInfoConstPtr& info_msg)
   dst_info_msg->P[5] = dst_info_msg->P[5] * scale_y;  // fy
   dst_info_msg->P[6] = dst_info_msg->P[6] * scale_y;  // cy
 
+  dst_info_msg->roi.x_offset = static_cast<int>(dst_info_msg->roi.x_offset * scale_x);
+  dst_info_msg->roi.y_offset = static_cast<int>(dst_info_msg->roi.y_offset * scale_y);
+  dst_info_msg->roi.width = static_cast<int>(dst_info_msg->roi.width * scale_x);
+  dst_info_msg->roi.height = static_cast<int>(dst_info_msg->roi.height * scale_y);
+
   pub_info_.publish(dst_info_msg);
 }
 
@@ -173,10 +179,10 @@ void ResizeNodelet::imageCb(const sensor_msgs::ImageConstPtr& image_msg)
     config = config_;
   }
 
-  cv_bridge::CvImagePtr cv_ptr;
+  cv_bridge::CvImageConstPtr cv_ptr;
   try
   {
-    cv_ptr = cv_bridge::toCvCopy(image_msg);
+    cv_ptr = cv_bridge::toCvShare(image_msg);
   }
   catch (cv_bridge::Exception& e)
   {
@@ -186,20 +192,22 @@ void ResizeNodelet::imageCb(const sensor_msgs::ImageConstPtr& image_msg)
 
   if (config.use_scale)
   {
-    cv::resize(cv_ptr->image, cv_ptr->image, cv::Size(0, 0), config.scale_width, config.scale_height,
+    cv::resize(cv_ptr->image, scaled_cv_.image, cv::Size(0, 0), config.scale_width, config.scale_height,
                config.interpolation);
   }
   else
   {
     int height = config.height == -1 ? image_msg->height : config.height;
     int width = config.width == -1 ? image_msg->width : config.width;
-    cv::resize(cv_ptr->image, cv_ptr->image, cv::Size(width, height), 0, 0, config.interpolation);
+    cv::resize(cv_ptr->image, scaled_cv_.image, cv::Size(width, height), 0, 0, config.interpolation);
   }
 
-  pub_image_.publish(cv_ptr->toImageMsg());
+  scaled_cv_.header = image_msg->header;
+  scaled_cv_.encoding = image_msg->encoding;
+  pub_image_.publish(scaled_cv_.toImageMsg());
 }
 
 }  // namespace image_proc
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(image_proc::ResizeNodelet, nodelet::Nodelet)
