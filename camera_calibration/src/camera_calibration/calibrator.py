@@ -1139,8 +1139,8 @@ class StereoCalibrator(Calibrator):
             self.r.mapx = self.rcal.mapx
             self.r.mapy = self.rcal.mapy
         else:
-            lcorners = [(l, b) for (l, r, b) in good]
-            rcorners = [(r, b) for (l, r, b) in good]
+            lcorners = [(lco, lid, b) for (lco, rco, lid, rid, b) in good]
+            rcorners = [(rco, rid, b) for (lco, rco, lid, rid, b) in good]
             self.l.cal_fromcorners(lcorners)
             self.r.cal_fromcorners(rcorners)
 
